@@ -43,15 +43,15 @@ class cfg:
         return self.configFileData[Thing]
 
 
-def DebugPrint(Category, Text, Color):
+def DebugPrint(Catagory, Text, Color):
     if not DEBUG:
         return
     print(colored('['+datetime.now().strftime("%H:%M:%S")+'] ', 'yellow') +
-          colored('['+Category+'] ', 'magenta')+colored(Text, Color))
+          colored('['+Catagory+'] ', 'magenta')+colored(Text, Color))
 
 
 class check(threading.Thread):
-    def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startTime, startIndex):
+    def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startTime, startIndex, endIndex):
         threading.Thread.__init__(self)
         self.thread = thread
         self.url = url
@@ -61,9 +61,10 @@ class check(threading.Thread):
         self.timeout = timeout
         self.startIndex = startIndex
         self.startTime = startTime
+        self.endIndex = endIndex
 
     def run(self):
-        for i in range(self.startIndex, self.pWordIta):
+        for i in range(self.startIndex, self.endIndex):
             toTry = self.pWord + (str(i).zfill(len(str(self.pWordIta))))
             DebugPrint(
                 "Crack", f'{colored("Trying", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(toTry, "green")}', "cyan")
@@ -99,8 +100,9 @@ def main():
         "Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     for i in range(threads):
+        startIndex = int((pWordIta/threads - 1))
         t = check(i, url, pWordIta, pWord, uName, timeout,
-                  startTime, int((pWordIta/threads - 1) * i))
+                  startTime, startIndex * i, startIndex * (i + 1))
         t.daemon = True
         t.start()
 
@@ -112,5 +114,3 @@ if __name__ == "__main__":
             continue
     except:
         DebugPrint('Main', 'Exiting...', 'red')
-
-# TODO: Give threads max so they stop instead of rechecking
