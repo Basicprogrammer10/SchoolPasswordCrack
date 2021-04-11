@@ -1,4 +1,4 @@
-import threading, requests,  os, re
+import threading, requests,  os, re, time
 from datetime import datetime
 
 ############ VARS ############
@@ -38,7 +38,7 @@ def DebugPrint(Catagory, Text, Color):
     print(colored('['+datetime.now().strftime("%H:%M:%S")+'] ','yellow')+colored('['+Catagory+'] ','magenta')+colored(Text,Color))
 
 class check(threading.Thread):
-    def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startIndex):
+    def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startTime, startIndex):
         threading.Thread.__init__(self)
         self.thread = thread
         self.url = url
@@ -47,6 +47,7 @@ class check(threading.Thread):
         self.uName = uName
         self.timeout = timeout
         self.startIndex = startIndex
+        self.startTime = startTime
 
     def run(self):
         for i in range(self.startIndex, self.pWordIta):
@@ -59,7 +60,7 @@ class check(threading.Thread):
             except (requests.exceptions.TooManyRedirects, requests.exceptions.Timeout):
                 continue
             if data.status_code != 200: continue
-            DebugPrint("Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")}', "cyan")
+            DebugPrint("Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
             os._exit(0)
 
 ####### MAIN FUNCTION #######
@@ -73,12 +74,12 @@ def main():
     pWord = config.get('pWord')
     timeout = float(config.get('timeout'))
     threads = int(config.get('threads'))
-
+    startTime = time.time()
 
     DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     for i in range(threads):
-        t = check(i, url, pWordIta, pWord, uName, timeout, int((pWordIta/threads - 1) * i))
+        t = check(i, url, pWordIta, pWord, uName, timeout, startTime, 5920 + int((pWordIta/threads - 1) * i))
         t.daemon = True
         t.start()
     
