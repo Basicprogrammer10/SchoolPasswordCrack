@@ -1,0 +1,6 @@
+url = "https://parents.genesisedu.com/bernardsboe/sis/j_security_check"
+timeout = "0.5"
+
+uName = ""
+pWord = "30"
+pWordIta = "9999"
