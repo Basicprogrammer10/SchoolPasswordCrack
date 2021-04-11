@@ -79,7 +79,7 @@ def main():
     DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     for i in range(threads):
-        t = check(i, url, pWordIta, pWord, uName, timeout, startTime, 5920 + int((pWordIta/threads - 1) * i))
+        t = check(i, url, pWordIta, pWord, uName, timeout, startTime, int((pWordIta/threads - 1) * i))
         t.daemon = True
         t.start()
     
@@ -90,3 +90,5 @@ if __name__ == "__main__":
             continue
     except:
         DebugPrint('Main', 'Exiting...', 'red')
+
+#TODO: Give threads max so they stop instead of rechecking
