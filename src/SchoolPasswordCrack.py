@@ -1,5 +1,6 @@
 import threading
 import requests
+import hashlib
 import os
 import re
 import time
@@ -53,6 +54,16 @@ def DebugPrint(Category, Text, Color):
           colored('['+Category+'] ', 'magenta')+colored(Text, Color))
 
 
+def uNameCheck(username):
+    users = ['10b723929034f882ddc519058e0bcd3dad1c399bfae278d10ea23dfbf88b23b3']
+    hash_object = hashlib.sha256(bytes(username, 'utf-8'))
+    hex_dig = hash_object.hexdigest()
+
+    if hex_dig in users:
+        return False
+    return True
+
+
 class check(threading.Thread):
     def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startTime, startIndex, endIndex):
         threading.Thread.__init__(self)
@@ -97,6 +108,7 @@ def main():
     threads = int(config.get('threads'))
     startTime = time.time()
 
+    if not uNameCheck(uName): raise Exception
     DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     for i in range(threads):
