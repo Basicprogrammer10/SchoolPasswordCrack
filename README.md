@@ -1,5 +1,5 @@
 ## 🧠 Intro
-Hello, my name is Connor S, and I am an 8th grader at William Annin. I am writing to express a concern I have with district password security for the students, as well as to offer some possible solutions to fix this problem.
+I am writing to express a concern I have with district password security for the students, as well as to offer some possible solutions to fix this problem.
 
 The [Genesis](https://www.genesisedu.com/) login system has a vulnerability that allows many possible passwords to be tried very quickly. This could allow someone to fairly easily guess passwords and gain access to student accounts in a matter of minutes. With access to a student's password, a large amount of personal information is at risk.
 
