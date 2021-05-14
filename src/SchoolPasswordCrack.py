@@ -117,16 +117,20 @@ class check(threading.Thread):
 def main():
     # Read Configvalues from the config file and assign them to vars
     DebugPrint('Main', 'Starting...', 'green')
-    config = cfg()
-    config.read(configFile)
-    url = config.get('url').split('"')[1]
-    checkUrl = config.get('checkUrl').split('"')[1]
-    pWordIta = int(config.get('pWordIta'))
-    uName = config.get('uName').split('"')[1]
-    pWord = config.get('pWord')
-    timeout = float(config.get('timeout'))
-    threads = int(config.get('threads'))
-    startTime = time.time()
+    try:
+        config = cfg()
+        config.read(configFile)
+        url = config.get('url').split('"')[1]
+        checkUrl = config.get('checkUrl').split('"')[1]
+        pWordIta = int(config.get('pWordIta'))
+        uName = config.get('uName').split('"')[1]
+        pWord = config.get('pWord')
+        timeout = float(config.get('timeout'))
+        threads = int(config.get('threads'))
+        startTime = time.time()
+    except:
+        DebugPrint('Main', 'Problem with your Config file :/', 'red')
+        os._exit(-1)
 
     DebugPrint(
         "Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
