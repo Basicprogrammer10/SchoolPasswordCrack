@@ -2,3 +2,5 @@
 .vscode/.ropeproject/config.py
 .vscode/.ropeproject/objectdb
 src/autoCovidForm.py
+school_password_crack/target
+*.pdf
