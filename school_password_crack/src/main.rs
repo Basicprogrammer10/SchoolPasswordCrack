@@ -1,10 +1,6 @@
+#![allow(unused_attributes)]
+
 use std::env;
-use std::io::Write;
-use std::process;
-use std::thread;
-use std::time::Duration;
-use std::time::{SystemTime, UNIX_EPOCH};
-use ureq::{Agent, AgentBuilder};
 
 #[macro_use]
 mod color;
@@ -17,11 +13,21 @@ static VERSION: &str = "0.0";
 fn main() {
   let args: Vec<String> = env::args().collect();
 
-  color_print!(
-    Color::Green,
-    "[*] Starting School Password Crack CLI (V{})",
-    VERSION
+  println!(
+    "{}",
+    color::color_bold(
+      &format!("[*] Starting School Password Crack CLI (V{})", VERSION),
+      Color::Green
+    )
   );
 
-  command::parse_command(&args);
+  // I wish this didn't have to be unsafe...
+  // At least if gives a bettor experience for building commands
+  unsafe {
+    // Load Commands
+    command::load_commands();
+
+    // Parse and run Sub Commands
+    command::parse_command(&args);
+  }
 }

@@ -171,3 +171,5 @@ pub fn crack() {
         );
     }
 }
+
+// Note: I now think I need to refresh the token per attempt :/

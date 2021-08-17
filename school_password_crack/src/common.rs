@@ -13,24 +13,24 @@ pub fn similarity(str1: &str, str2: &str) -> f64 {
         return 0.0;
     }
 
-    let mut firstBigrams: HashMap<&str, i32> = HashMap::new();
+    let mut first_bigrams: HashMap<&str, i32> = HashMap::new();
     for i in 0..a.len() - 1 {
         let bigram = &a[i..i + 2];
-        let count = firstBigrams.get(bigram).unwrap_or(&0) + 1;
-        firstBigrams.insert(bigram, count);
+        let count = first_bigrams.get(bigram).unwrap_or(&0) + 1;
+        first_bigrams.insert(bigram, count);
     }
 
-    let mut intersectionSize = 0;
+    let mut intersection_size = 0;
     for i in 0..b.len() - 1 {
         let bigram = &b[i..i + 2];
-        let count = firstBigrams.get(bigram).unwrap_or(&0).clone();
+        let count = first_bigrams.get(bigram).unwrap_or(&0).clone();
         if count > 0 {
-            firstBigrams.insert(bigram, count - 1);
-            intersectionSize += 1;
+            first_bigrams.insert(bigram, count - 1);
+            intersection_size += 1;
         }
     }
 
-    (2.0 * intersectionSize as f64) / (str1.len() + str2.len() - 2) as f64
+    (2.0 * intersection_size as f64) / (str1.len() + str2.len() - 2) as f64
 }
 
 pub fn upper_first_char(s: &str) -> String {
