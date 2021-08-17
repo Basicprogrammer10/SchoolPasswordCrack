@@ -4,6 +4,7 @@ use std::env;
 
 #[macro_use]
 mod color;
+mod arg_parse;
 mod command;
 mod common;
 use color::Color;

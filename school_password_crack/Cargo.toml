@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 ureq = { version = "2.1.1", features = ["cookies"] }
+regex = "1.5.4"

