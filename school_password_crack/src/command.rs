@@ -1,6 +1,6 @@
-mod test;
-mod help;
 mod crack;
+mod help;
+mod test;
 
 #[macro_use]
 use super::color;
@@ -23,7 +23,7 @@ pub unsafe fn parse_command(args: &[String]) -> bool {
         for i in COMMANDS.iter() {
             if &args[1].to_lowercase() == &i.name.to_lowercase() {
                 (i).execute(args);
-                return true
+                return true;
             }
         }
         incorrect_command(args[1].to_lowercase())
@@ -38,10 +38,18 @@ unsafe fn no_sub_command(sub_cmd: bool) {
     color_print!(Color::Yellow, " └── SubCommands");
     for i in COMMANDS.iter() {
         if i.name == COMMANDS.last().unwrap().name {
-            color_print!(Color::Yellow, "     └─── {}", &common::upper_first_char(&i.name));
+            color_print!(
+                Color::Yellow,
+                "     └─── {}",
+                &common::upper_first_char(&i.name)
+            );
             continue;
         }
-        color_print!(Color::Yellow, "     ├─── {}", &common::upper_first_char(&i.name));
+        color_print!(
+            Color::Yellow,
+            "     ├─── {}",
+            &common::upper_first_char(&i.name)
+        );
     }
 }
 

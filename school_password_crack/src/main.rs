@@ -11,23 +11,23 @@ use color::Color;
 static VERSION: &str = "0.0";
 
 fn main() {
-  let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
-  println!(
-    "{}",
-    color::color_bold(
-      &format!("[*] Starting School Password Crack CLI (V{})", VERSION),
-      Color::Green
-    )
-  );
+    println!(
+        "{}",
+        color::color_bold(
+            &format!("[*] Starting School Password Crack CLI (V{})", VERSION),
+            Color::Green
+        )
+    );
 
-  // I wish this didn't have to be unsafe...
-  // At least if gives a bettor experience for building commands
-  unsafe {
-    // Load Commands
-    command::load_commands();
+    // I wish this didn't have to be unsafe...
+    // At least if gives a bettor experience for building commands
+    unsafe {
+        // Load Commands
+        command::load_commands();
 
-    // Parse and run Sub Commands
-    command::parse_command(&args);
-  }
+        // Parse and run Sub Commands
+        command::parse_command(&args);
+    }
 }
