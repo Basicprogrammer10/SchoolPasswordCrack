@@ -1,4 +1,4 @@
-# Genesis Password Concern
+# Genesis Password Concern [![Rust](https://github.com/Basicprogrammer10/SchoolPasswordCrack/actions/workflows/rust.yml/badge.svg)](https://github.com/Basicprogrammer10/SchoolPasswordCrack/actions/workflows/rust.yml) ![Lines of code](https://img.shields.io/tokei/lines/github/basicprogrammer10/SchoolPasswordCrack?label=Total%20Lines)
 
 ## 🧠 Intro
 
