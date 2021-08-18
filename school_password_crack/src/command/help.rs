@@ -21,7 +21,7 @@ pub fn command() -> Command {
                     let mut command_usage: String = "".to_string();
 
                     for i in COMMANDS.iter() {
-                        if i.name == command {
+                        if i.name == command.to_lowercase() {
                             command_info = (&i.description).clone();
                             command_usage = (&i.usage).clone();
                             found_command = true;
