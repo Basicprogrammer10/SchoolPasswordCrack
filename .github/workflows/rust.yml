@@ -27,6 +27,6 @@ jobs:
       with:
         name: school_password_crack-${{ matrix.os }}
         path: |
-          ./target/release/school_password_crack*
-          !./target/release/school_password_crack.d
-          !./target/release/school_password_crack.pdb
+          ./school_password_cracktarget/release/school_password_crack*
+          !./school_password_crack/target/release/school_password_crack.d
+          !./school_password_crack/target/release/school_password_crack.pdb
