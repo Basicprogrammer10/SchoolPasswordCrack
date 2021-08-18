@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use regex::Regex;
+
 /// Use Dice Coefficient to calculate the similarity between two strings.
 pub fn similarity(str1: &str, str2: &str) -> f64 {
     let a = str1.replace(" ", "");
@@ -40,6 +42,31 @@ pub fn upper_first_char(s: &str) -> String {
         Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
     }
 }
+
+pub fn get_username(args: &[String]) -> Option<String> {
+    let mut username: String = "".to_string();
+    let mut i = 2;
+    while i < args.len() {
+        if args[i].starts_with('-') {
+            i += 2;
+            continue;
+        }
+        username = (&args[i]).to_string();
+        break;
+    }
+
+    if username.is_empty() {
+        return None;
+    }
+
+    Some(username)
+}
+
+pub fn is_valid_email(email: &str) -> bool {
+    let email_regex = Regex::new(r"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+").unwrap();
+    email_regex.is_match(email)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

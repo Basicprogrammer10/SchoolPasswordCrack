@@ -241,7 +241,7 @@ pub fn crack(username: &str, threads: u32, base_url: &str) {
             thread::sleep(Duration::from_millis(100));
         }
     }
-    
+
     if unsafe { !FOUND } {
         color_print!(Color::Red, "\r[*] No Password Found :/");
     }

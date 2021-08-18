@@ -1,5 +1,6 @@
 mod crack;
 mod help;
+mod lock;
 mod test;
 
 #[macro_use]
@@ -13,6 +14,7 @@ pub unsafe fn load_commands() {
     COMMANDS.push(test::command());
     COMMANDS.push(help::command());
     COMMANDS.push(crack::command());
+    COMMANDS.push(lock::command());
 }
 
 pub unsafe fn parse_command(args: &[String]) -> bool {
