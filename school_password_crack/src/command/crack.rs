@@ -24,7 +24,7 @@ pub fn command() -> Command {
     Command::new(
         "crack",
         "Crack A password",
-        "crack <username> [-t Threads] [--page BasePage]",
+        "crack <username> [-t Threads] [-p Prefix] [--page BasePage]",
         |args| {
             if args.len() <= 2 {
                 color_print!(Color::Red, "[*] Not enough args supplied");
