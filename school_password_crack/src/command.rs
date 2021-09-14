@@ -2,6 +2,7 @@ mod crack;
 mod help;
 mod lock;
 mod test;
+mod info;
 
 #[macro_use]
 use super::color;
@@ -11,10 +12,11 @@ use super::common;
 pub static mut COMMANDS: Vec<Command> = Vec::new();
 
 pub unsafe fn load_commands() {
-    COMMANDS.push(test::command());
-    COMMANDS.push(help::command());
     COMMANDS.push(crack::command());
+    COMMANDS.push(help::command());
+    COMMANDS.push(info::command());
     COMMANDS.push(lock::command());
+    COMMANDS.push(test::command());
 }
 
 pub unsafe fn parse_command(args: &[String]) -> bool {
