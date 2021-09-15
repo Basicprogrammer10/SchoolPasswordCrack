@@ -1,8 +1,8 @@
 mod crack;
 mod help;
+mod info;
 mod lock;
 mod test;
-mod info;
 
 #[macro_use]
 use super::color;

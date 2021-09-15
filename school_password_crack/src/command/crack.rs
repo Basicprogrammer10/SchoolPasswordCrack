@@ -132,7 +132,12 @@ impl Cracker {
         let mut i: u32 = self.start_index as u32;
         while i < self.end_index {
             // Gen password guess
-            let to_try: &str = &format!("{}{:0width$}", &self.prefix, i, width = self.password_len as usize);
+            let to_try: &str = &format!(
+                "{}{:0width$}",
+                &self.prefix,
+                i,
+                width = self.password_len as usize
+            );
 
             // Make an agent
             let agent: Agent = Agent::new();
