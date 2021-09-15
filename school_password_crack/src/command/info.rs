@@ -52,52 +52,56 @@ pub fn command() -> Command {
             color_print!(Color::Magenta, "[i] Password: {}", &password);
             println!();
 
-            // Login to account and get some info
-            // Init new agent
-            let agent = Agent::new();
-
-            // Get jsessionid cookie
-            match agent.get(&format!("{}/sis/view", base_page)).call() {
-                Ok(_) => {},
-                Err(_) => {
-                    color_print!(Color::Red, "[-] Error connecting to server");
-                    return;
-                }
-            };
-
-            let body = match agent
-                .post(&format!("{}/sis/j_security_check", base_page))
-                .query("j_username", username)
-                .query("j_password", password)
-                .call()
-            {
-                Ok(body) => body.into_string().unwrap_or_else(|_| "".to_string()),
-                Err(_) => {
-                    color_print!(Color::Red, "[-] Error connecting to server");
-                    return;
-                }
-            };
-            if body.contains("Account is inactive") {
-                color_print!(Color::Red, "[-] Account is inactive");
-                return;
-            }
-
-            if !body.contains("workStudentId") {
-                color_print!(Color::Red, "[-] Login Failed");
-                return;
-            }
-
-            // Get Student Info
-            let student = match Student::from_raw(body, username.to_string()) {
-                Some(student) => student,
-                None => {
-                    color_print!(Color::Red, "[-] Error parseing student info");
-                    return;
-                }
-            };
-            student.display();
+            info(username, password, base_page);
         },
     )
+}
+
+pub fn info(username: &str, password: &str, base_page: &str) {
+    // Login to account and get some info
+    // Init new agent
+    let agent = Agent::new();
+
+    // Get jsessionid cookie
+    match agent.get(&format!("{}/sis/view", base_page)).call() {
+        Ok(_) => {}
+        Err(_) => {
+            color_print!(Color::Red, "[-] Error connecting to server");
+            return;
+        }
+    };
+
+    let body = match agent
+        .post(&format!("{}/sis/j_security_check", base_page))
+        .query("j_username", username)
+        .query("j_password", password)
+        .call()
+    {
+        Ok(body) => body.into_string().unwrap_or_else(|_| "".to_string()),
+        Err(_) => {
+            color_print!(Color::Red, "[-] Error connecting to server");
+            return;
+        }
+    };
+    if body.contains("Account is inactive") {
+        color_print!(Color::Red, "[-] Account is inactive");
+        return;
+    }
+
+    if !body.contains("workStudentId") {
+        color_print!(Color::Red, "[-] Login Failed");
+        return;
+    }
+
+    // Get Student Info
+    let student = match Student::from_raw(body, username.to_string()) {
+        Some(student) => student,
+        None => {
+            color_print!(Color::Red, "[-] Error parseing student info");
+            return;
+        }
+    };
+    student.display();
 }
 
 struct Student {
@@ -196,34 +200,34 @@ impl Student {
         ))
     }
 
+    #[rustfmt::skip]
     fn display(&self) {
         // Make a i64 seed from the student name
-        let name = self.name.chars().fold(1, |acc, c| acc * c as i64);
+        let name = self.name.chars().fold(1, |acc, c| acc + c as i64);
 
         println!("╭─────────────╮");
-        println!("│{}│  Name: {}", box_line(13, name), self.name);
-        println!("│{}│  ID: {}", box_line(13, name^2), self.id);
-        println!("│{}│  Grade: {}", box_line(13, name^3), self.grade);
-        println!("│{}│  School: {}", box_line(13, name^4), self.school);
-        println!("│{}│  Email: {}", box_line(13, name^5), self.email);
-        println!("│{}│  Age: {}", box_line(13, name^6), self.age);
-        println!("│{}│  DOB: {}", box_line(13, name^7), self.dob);
+        println!("│{}│  \x1B[37mName:   {}\x1B[0m", box_line(13, name^1), self.name);
+        println!("│{}│  \x1B[31mID:     {}\x1B[0m", box_line(13, name^2), self.id);
+        println!("│{}│  \x1B[32mGrade:  {}\x1B[0m", box_line(13, name^3), self.grade);
+        println!("│{}│  \x1B[33mSchool: {}\x1B[0m", box_line(13, name^4), self.school);
+        println!("│{}│  \x1B[34mEmail:  {}\x1B[0m", box_line(13, name^5), self.email);
+        println!("│{}│  \x1B[35mAge:    {}\x1B[0m", box_line(13, name^6), self.age);
+        println!("│{}│  \x1B[36mDOB:    {}\x1B[0m", box_line(13, name^7), self.dob);
         println!("╰─────────────╯");
     }
 }
 
 fn box_line(len: usize, seed: i64) -> String {
-    // Make a random string of length len
-    // Like this:
-    // * x     * D
-
     let mut rand = Random::new(seed);
     let mut line = String::new();
     for _ in 0..len {
+        let c = rand.next_int_i64(30, 37) as u8;
+        line.push_str(&format!("\x1B[{}m", c));
         match rand.next_f64().abs() {
             x if x < 0.5 => line.push('*'),
             _ => line.push(' '),
         }
     }
+    line.push_str("\x1B[0;0m");
     line
 }

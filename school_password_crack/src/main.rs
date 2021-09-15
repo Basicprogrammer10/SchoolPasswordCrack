@@ -9,7 +9,7 @@ mod command;
 mod common;
 use color::Color;
 
-pub static VERSION: &str = "0.1.2";
+pub static VERSION: &str = "0.1.3";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
