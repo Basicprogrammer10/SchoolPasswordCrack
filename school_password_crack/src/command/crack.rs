@@ -307,15 +307,13 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
         std::io::stdout().flush().expect("Err flushing STD Out");
     }
 
-    // if unsafe { !FOUND } {
-    //     color_print!(Color::Red, "\r[*] No Password Found :/");
-    // }
+    if !unsafe { RUNNING } {
+        color_print!(Color::Red, "\r[*] No Password Found :/");
+    }
 
     color_print!(
         Color::Green,
         "\n[*] All Done - Took {}s",
         &start_time.elapsed().unwrap().as_secs().to_string()
     );
-
-    // println!("\n[*] ALL PASSWORDS: {}", unsafe { TRIED });
 }
