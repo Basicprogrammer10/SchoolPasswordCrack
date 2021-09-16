@@ -307,8 +307,8 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
         std::io::stdout().flush().expect("Err flushing STD Out");
     }
 
-    if !unsafe { RUNNING } {
-        color_print!(Color::Red, "\r[*] No Password Found :/");
+    if unsafe { RUNNING } {
+        print!("{}", color::color("\r[-] Password not found", Color::Red));
     }
 
     color_print!(
