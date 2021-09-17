@@ -20,7 +20,7 @@ pub fn command() -> Command {
                     let mut command_info: String = "".to_string();
                     let mut command_usage: String = "".to_string();
 
-                    for i in COMMANDS.iter() {
+                    for i in COMMANDS.clone().unwrap().iter() {
                         if i.name == command.to_lowercase() {
                             command_info = (&i.description).clone();
                             command_usage = (&i.usage).clone();
@@ -32,7 +32,8 @@ pub fn command() -> Command {
                     if !found_command {
                         let mut best = "";
                         let mut best_score = 0.0;
-                        for i in COMMANDS.iter() {
+                        let commands = COMMANDS.clone().unwrap();
+                        for i in commands.iter() {
                             let score = common::similarity(&command, &i.name);
                             if score > best_score {
                                 best = &i.name;
@@ -71,11 +72,11 @@ pub fn command() -> Command {
                 // General Help
                 color_print!(Color::Magenta, "\n{}", HELP);
                 color_print!(Color::Cyan, "\n[*] Available Commands");
-                if COMMANDS.is_empty() {
+                if COMMANDS.clone().unwrap().is_empty() {
                     color_print!(Color::Red, " └─── Somthing Aint Right... No Commands Found");
                 }
-                for i in COMMANDS.iter() {
-                    if i.name == COMMANDS.last().unwrap().name {
+                for i in COMMANDS.clone().unwrap().iter() {
+                    if i.name == COMMANDS.clone().unwrap().last().unwrap().name {
                         color_print!(
                             Color::Yellow,
                             " └─── {}",
@@ -98,4 +99,4 @@ pub fn command() -> Command {
 static HELP: &str = r#"[*] Welcome to SchoolPasswordCrack CLI By Connor Slade!
 [*] This is an open source program to crack passwords for the genesis System.
 [*] It basically just tries lots of passwords until it is able to login
-[*] For more info on any commad just run 'help [COMMAND]'"#;
+[*] For more info on any command just run 'help [COMMAND]'"#;

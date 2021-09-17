@@ -9,39 +9,48 @@ use super::color;
 use super::color::Color;
 use super::common;
 
-pub static mut COMMANDS: Vec<Command> = Vec::new();
+pub static mut COMMANDS: Option<Vec<Command>> = None;
 
-pub unsafe fn load_commands() {
-    COMMANDS.push(crack::command());
-    COMMANDS.push(help::command());
-    COMMANDS.push(info::command());
-    COMMANDS.push(lock::command());
-    COMMANDS.push(test::command());
+pub fn load_commands() -> Vec<Command> {
+    let mut commands = Vec::new();
+
+    commands.push(crack::command());
+    commands.push(help::command());
+    commands.push(info::command());
+    commands.push(lock::command());
+    commands.push(test::command());
+
+    unsafe {
+        COMMANDS = Some(commands.clone());
+    }
+    commands.clone()
 }
 
-pub unsafe fn parse_command(args: &[String]) -> bool {
+pub fn parse_command(commands: Vec<Command>, args: &[String]) -> bool {
     let args_len = args.len();
     if args_len <= 1 {
-        no_sub_command(false);
-    } else if args_len >= 2 {
-        for i in COMMANDS.iter() {
+        no_sub_command(commands, false);
+        return false;
+    }
+    if args_len >= 2 {
+        for i in commands.iter() {
             if &args[1].to_lowercase() == &i.name.to_lowercase() {
                 (i).execute(args);
                 return true;
             }
         }
-        incorrect_command(args[1].to_lowercase())
+        incorrect_command(commands, args[1].to_lowercase())
     }
     false
 }
 
-unsafe fn no_sub_command(sub_cmd: bool) {
+fn no_sub_command(commands: Vec<Command>, sub_cmd: bool) {
     if !sub_cmd {
         color_print!(Color::Red, "[*] No sub-command supplied...");
     }
     color_print!(Color::Yellow, " └── SubCommands");
-    for i in COMMANDS.iter() {
-        if i.name == COMMANDS.last().unwrap().name {
+    for i in commands.iter() {
+        if i.name == commands.last().unwrap().name {
             color_print!(
                 Color::Yellow,
                 "     └─── {}",
@@ -57,11 +66,11 @@ unsafe fn no_sub_command(sub_cmd: bool) {
     }
 }
 
-unsafe fn incorrect_command(command: String) {
+fn incorrect_command(commands: Vec<Command>, command: String) {
     color_print!(Color::Red, &*format!("[*] Unknown Command: `{}`", command));
     let mut best = "";
     let mut best_score = 0.0;
-    for i in COMMANDS.iter() {
+    for i in commands.iter() {
         let score = common::similarity(&command, &i.name);
         if score > best_score {
             best = &i.name;
@@ -69,7 +78,7 @@ unsafe fn incorrect_command(command: String) {
         }
     }
     if best_score < 0.5 {
-        no_sub_command(true);
+        no_sub_command(commands, true);
         return;
     }
     color_print!(
@@ -98,5 +107,17 @@ impl Command {
 
     pub fn execute(&self, args: &[String]) {
         (self.func)(args)
+    }
+}
+
+// Impl Copy for Command
+impl Clone for Command {
+    fn clone(&self) -> Self {
+        Command {
+            name: self.name.clone(),
+            description: self.description.clone(),
+            usage: self.usage.clone(),
+            func: self.func,
+        }
     }
 }

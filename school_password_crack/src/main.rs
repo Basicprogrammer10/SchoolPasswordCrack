@@ -22,13 +22,9 @@ fn main() {
         )
     );
 
-    // I wish this didn't have to be unsafe...
-    // At least if gives a bettor experience for building commands
-    unsafe {
-        // Load Commands
-        command::load_commands();
+    // Load Commands
+    let commands = command::load_commands();
 
-        // Parse and run Sub Commands
-        command::parse_command(&args);
-    }
+    // Parse and run Sub Commands
+    command::parse_command(commands, &args);
 }

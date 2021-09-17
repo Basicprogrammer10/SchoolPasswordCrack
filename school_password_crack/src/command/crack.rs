@@ -222,9 +222,6 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
     // Make a new System
     let mut system: System = System::new(passwords, threads);
 
-    // unsafe {
-    //     RUNNING = threads as i32;
-    // }
     for i in 0..system.threads {
         let start_index = system.passwords / system.threads as u32;
         let mut end_index = start_index * (i + 1);
