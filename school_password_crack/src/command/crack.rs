@@ -12,6 +12,7 @@ use ureq::Agent;
 
 // Internal Modules
 use super::super::arg_parse;
+use super::super::BASE_PAGE;
 use super::color;
 use super::color::Color;
 use super::Command;
@@ -39,8 +40,7 @@ pub fn command() -> Command {
 
             let prefix: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("30");
 
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
-                .unwrap_or("https://parents.genesisedu.com/bernardsboe");
+            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let mut username: String = "".to_string();

@@ -9,6 +9,7 @@ use ureq::Agent;
 
 // Internal Modules
 use super::super::arg_parse;
+use super::super::BASE_PAGE;
 use super::color;
 use super::color::Color;
 use super::common;
@@ -43,8 +44,7 @@ pub fn command() -> Command {
 
             let password: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("🔒");
 
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
-                .unwrap_or("https://parents.genesisedu.com/bernardsboe");
+            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let username: String = match common::get_username(args) {
@@ -175,9 +175,7 @@ impl Locker {
         for _ in 0..self.req_count {
             let agent = Agent::new();
 
-            let _ = agent
-                .get("https://parents.genesisedu.com/bernardsboe/login")
-                .call();
+            let _ = agent.get(&format!("{}/login", BASE_PAGE)).call();
             let _ = agent
                 .post(&self.page)
                 .query("j_username", &self.username)

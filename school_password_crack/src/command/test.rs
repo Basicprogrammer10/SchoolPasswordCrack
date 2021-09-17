@@ -7,6 +7,7 @@ use std::time::Instant;
 
 use ureq;
 
+use super::super::BASE_PAGE;
 use super::color;
 use super::color::Color;
 use super::Command;
@@ -23,13 +24,11 @@ pub fn command() -> Command {
         });
 
         // Make sure Genesis is up
-        test("Genesis Up", || {
-            ureq::get("http://www.genesisedu.com").call().is_ok()
-        });
+        test("Genesis Up", || ureq::get(BASE_PAGE).call().is_ok());
 
         // Make sure the Session Id is being set
         test("Genesis Session", || {
-            let session = ureq::get("https://parents.genesisedu.com/bernardsboe/sis/view").call();
+            let session = ureq::get(&format!("{}/bernardsboe/sis/view", BASE_PAGE)).call();
             match session.unwrap().header("set-cookie") {
                 Some(cookie) => cookie.contains("JSESSIONID"),
                 None => false,
@@ -56,14 +55,11 @@ fn test(name: &str, test: fn() -> bool) {
                 if result {
                     print!(
                         "{}",
-                        color::color(&format!("\r[✅] {}\n", name), Color::Green)
+                        color::color(&format!("\r[+] {}\n", name), Color::Green)
                     );
                     break;
                 }
-                print!(
-                    "{}",
-                    color::color(&format!("\r[❌] {}\n", name), Color::Red)
-                );
+                print!("{}", color::color(&format!("\r[-] {}\n", name), Color::Red));
                 break;
             }
             Err(_) => {}

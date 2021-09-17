@@ -2,6 +2,8 @@
 use micro_rand::Random;
 use ureq::Agent;
 
+use crate::BASE_PAGE;
+
 // Internal Modules
 use super::super::arg_parse;
 use super::color;
@@ -26,7 +28,7 @@ pub fn command() -> Command {
             }
 
             let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
-                .unwrap_or("https://parents.genesisedu.com/bernardsboe");
+                .unwrap_or(BASE_PAGE);
 
             // Get Username
             let username: &str = &args[2];
