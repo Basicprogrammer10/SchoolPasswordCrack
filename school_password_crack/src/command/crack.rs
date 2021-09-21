@@ -117,7 +117,6 @@ pub fn command() -> Command {
                         return;
                     }
                 }
-                return;
             }
 
             // C R A C K

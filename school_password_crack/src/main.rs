@@ -10,8 +10,7 @@ mod common;
 use color::Color;
 
 pub const BASE_PAGE: &str = "https://parents.genesisedu.com/bernardsboe";
-pub const VERSION: &str = "0.1.4";
-
+pub const VERSION: &str = "0.1.5";
 fn main() {
     let args: Vec<String> = env::args().collect();
 
