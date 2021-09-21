@@ -31,6 +31,11 @@ pub fn get_arg_value<'a>(raw_args: &'a [String], arg: &'a str) -> Option<&'a str
         return None;
     }
 
+    // Check if flag has no value
+    if args.len() < value + 2 {
+        return Some("");
+    }
+
     // Return the value if it does not start with - (--)
     let ret = args[value + 1];
     if ret.starts_with('-') {

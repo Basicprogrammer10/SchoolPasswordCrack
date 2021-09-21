@@ -27,8 +27,7 @@ pub fn command() -> Command {
                 return;
             }
 
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page")
-                .unwrap_or(BASE_PAGE);
+            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let username: &str = &args[2];
