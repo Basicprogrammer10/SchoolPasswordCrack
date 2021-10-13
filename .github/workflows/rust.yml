@@ -20,13 +20,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      working-directory: ./school_password_crack
       run: cargo build --release
 
     - uses: actions/upload-artifact@v2
       with:
         name: school_password_crack-${{ matrix.os }}
         path: |
-          ./school_password_crack/target/release/school_password_crack*
-          !./school_password_crack/target/release/school_password_crack.d
-          !./school_password_crack/target/release/school_password_crack.pdb
+          ./target/release/school_password_crack*
+          !./target/release/school_password_crack.d
+          !./target/release/school_password_crack.pdb
