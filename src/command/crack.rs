@@ -39,14 +39,14 @@ pub fn command() -> Command {
             let default_cache = home_dir().unwrap().join(Path::new(".SchoolPasswordCrack/cache"));
 
             // Parse the args
-            let threads: &u32 = &arg_parse::get_arg_value(&args, "-t")
+            let threads: &u32 = &arg_parse::get_arg_value(args, "-t")
                 .unwrap_or("16")
                 .parse::<u32>()
                 .unwrap();
-            let prefix: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("30");
-            let no_cache: bool = arg_parse::get_arg_value(&args, "-nc").is_some();
-            let cache_path: &str = &arg_parse::get_arg_value(&args, "--cache").unwrap_or(default_cache.to_str().unwrap());
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
+            let prefix: &str = arg_parse::get_arg_value(args, "-p").unwrap_or("30");
+            let no_cache: bool = arg_parse::get_arg_value(args, "-nc").is_some();
+            let cache_path: &str = arg_parse::get_arg_value(args, "--cache").unwrap_or_else(|| default_cache.to_str().unwrap());
+            let base_page: &str = arg_parse::get_arg_value(args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let mut username: String = "".to_string();
@@ -82,17 +82,21 @@ pub fn command() -> Command {
                 &color::color(&username, Color::Blue)
             );
 
-            color_print!(Color::Magenta, "[i] Prefix: {}", &prefix);
+            color_print!(Color::Magenta, "[i] Prefix: {}", prefix);
             color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
-            color_print!(Color::Magenta, "[i] Cache: {}", &cache.unwrap_or("None"));
-            color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
+            color_print!(Color::Magenta, "[i] Cache: {}", cache.unwrap_or("None"));
+            color_print!(Color::Magenta, "[i] Base Page: {}", base_page);
             println!();
 
             // Check if we have a cache of the username and if so, use it
-            if cache.is_some() && Path::new(cache.unwrap()).exists() {
+            if let Some(cache) =  cache {
+                if !Path::new(cache).exists() {
+                    return;
+                }
+
                 let mut file = OpenOptions::new()
                     .read(true)
-                    .open(cache.unwrap())
+                    .open(cache)
                     .unwrap();
 
                 let mut data = String::new();
@@ -103,7 +107,7 @@ pub fn command() -> Command {
                         continue;
                     }
 
-                    let mut entry = line.split(":");
+                    let mut entry = line.split(':');
                     let user = entry.next().unwrap();
                     let pass = entry.next().unwrap();
 
@@ -150,7 +154,7 @@ impl Cracker {
             instance,
             end_index,
             start_index,
-            password_len: password_len,
+            password_len,
             prefix: prefix.to_string(),
             username: username.to_string(),
             base_url: base_url.to_string(),
@@ -306,8 +310,8 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cac
 
     'main: while running > 0 {
         // Get any messages
-        match rx.try_recv() {
-            Ok(msg) => match msg {
+        if let Ok(msg) = rx.try_recv() {
+            match msg {
                 Message::Found(password) => {
                     print!(
                         "\r{} {}",
@@ -322,8 +326,7 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cac
                 }
                 Message::NotFound => tried += 1,
                 Message::End => running -= 1,
-            },
-            Err(_) => {}
+            }
         };
 
         // Redraw spinner only once per 100ms

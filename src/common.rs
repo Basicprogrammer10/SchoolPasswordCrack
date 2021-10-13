@@ -25,7 +25,7 @@ pub fn similarity(str1: &str, str2: &str) -> f64 {
     let mut intersection_size = 0;
     for i in 0..b.len() - 1 {
         let bigram = &b[i..i + 2];
-        let count = first_bigrams.get(bigram).unwrap_or(&0).clone();
+        let count = *first_bigrams.get(bigram).unwrap_or(&0);
         if count > 0 {
             first_bigrams.insert(bigram, count - 1);
             intersection_size += 1;

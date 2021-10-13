@@ -3,10 +3,8 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 // External Crates
-use micro_rand::Random;
+// use micro_rand::Random;
 use ureq::Agent;
-
-use crate::BASE_PAGE;
 
 // Internal Modules
 use super::super::arg_parse;
@@ -14,6 +12,8 @@ use super::color;
 use super::color::Color;
 use super::common;
 use super::Command;
+use crate::random;
+use crate::BASE_PAGE;
 
 pub fn command() -> Command {
     Command::new(
@@ -26,7 +26,7 @@ pub fn command() -> Command {
                 return;
             }
 
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
+            let base_page: &str = arg_parse::get_arg_value(args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let username: &str = &args[2];
@@ -34,7 +34,7 @@ pub fn command() -> Command {
             // Get Password
             let password: &str = &args[3];
 
-            if !common::is_valid_email(&username) {
+            if !common::is_valid_email(username) {
                 color_print!(
                     Color::Red,
                     "[-] The username supplied is not a valid Email..."
@@ -44,12 +44,12 @@ pub fn command() -> Command {
             color_print!(
                 Color::Green,
                 "\n[*] Starting Info on {}",
-                &color::color(&username, Color::Blue)
+                &color::color(username, Color::Blue)
             );
 
-            color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
-            color_print!(Color::Magenta, "[i] Username: {}", &username);
-            color_print!(Color::Magenta, "[i] Password: {}", &password);
+            color_print!(Color::Magenta, "[i] Base Page: {}", base_page);
+            color_print!(Color::Magenta, "[i] Username: {}", username);
+            color_print!(Color::Magenta, "[i] Password: {}", password);
             println!();
 
             info(username, password, base_page);
@@ -143,25 +143,25 @@ impl Student {
             .split("</td>")
             .next()?;
 
-        let first_name = raw_name.split(">").nth(1)?.split("<").nth(0)?;
+        let first_name = raw_name.split('>').nth(1)?.split('<').next()?;
 
-        let last_name = raw_name.split("\r\n").nth(2)?.split("\r\n").nth(0)?.trim();
+        let last_name = raw_name.split("\r\n").nth(2)?.split("\r\n").next()?.trim();
 
         let student_id = raw
             .split("Student ID:")
             .nth(1)?
-            .split(">")
+            .split('>')
             .nth(1)?
-            .split("<")
-            .nth(0)?;
+            .split('<')
+            .next()?;
 
         let grade = raw
             .split("Grade:")
             .nth(1)?
-            .split(">")
+            .split('>')
             .nth(3)?
-            .split("<")
-            .nth(0)?
+            .split('<')
+            .next()?
             .parse::<u8>()
             .unwrap_or(0);
 
@@ -175,27 +175,27 @@ impl Student {
         let age = raw
             .split("Age:")
             .nth(1)?
-            .split(">")
+            .split('>')
             .nth(2)?
-            .split("<")
-            .nth(0)?
+            .split('<')
+            .next()?
             .parse::<u8>()
             .unwrap_or(0);
 
         let dob = raw
             .split("Birthdate:")
             .nth(1)?
-            .split(">")
+            .split('>')
             .nth(2)?
-            .split("<")
-            .nth(0)?;
+            .split('<')
+            .next()?;
 
         Some(Student::new(
             format!("{} {}", first_name, last_name),
             student_id.to_string(),
             grade,
             school.to_string(),
-            email.to_string(),
+            email,
             age,
             dob.to_string(),
         ))
@@ -206,22 +206,22 @@ impl Student {
         // Make a i64 seed from the student info
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
-        let name = 0 - hasher.finish() as i64;
-        
+        let name = hasher.finish() as i64;
+
         println!("╭─────────────╮");
         println!("│{}│  \x1B[37mName:   {}\x1B[0m", box_line(13, name^1), self.name);
         println!("│{}│  \x1B[31mID:     {}\x1B[0m", box_line(13, name^2), self.id);
-        println!("│{}│  \x1B[32mGrade:  {}\x1B[0m", box_line(13, name^3), self.grade);
+        println!("│{}│  \x1B[34mEmail:  {}\x1B[0m", box_line(13, name^3), self.email);
         println!("│{}│  \x1B[33mSchool: {}\x1B[0m", box_line(13, name^4), self.school);
-        println!("│{}│  \x1B[34mEmail:  {}\x1B[0m", box_line(13, name^5), self.email);
+        println!("│{}│  \x1B[36mDOB:    {}\x1B[0m", box_line(13, name^5), self.dob);
         println!("│{}│  \x1B[35mAge:    {}\x1B[0m", box_line(13, name^6), self.age);
-        println!("│{}│  \x1B[36mDOB:    {}\x1B[0m", box_line(13, name^7), self.dob);
+        println!("│{}│  \x1B[32mGrade:  {}\x1B[0m", box_line(13, name^7), self.grade);
         println!("╰─────────────╯");
     }
 }
 
 fn box_line(len: usize, seed: i64) -> String {
-    let mut rand = Random::new(seed);
+    let mut rand = random::Random::new(seed as i128);
     let mut line = String::new();
     for _ in 0..len {
         let c = rand.next_int_i64(30, 37) as u8;

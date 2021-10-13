@@ -7,6 +7,7 @@ mod color;
 mod arg_parse;
 mod command;
 mod common;
+mod random;
 use color::Color;
 
 pub const BASE_PAGE: &str = "https://parents.genesisedu.com/bernardsboe";

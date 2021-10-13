@@ -12,18 +12,18 @@ use super::common;
 pub static mut COMMANDS: Option<Vec<Command>> = None;
 
 pub fn load_commands() -> Vec<Command> {
-    let mut commands = Vec::new();
-
-    commands.push(crack::command());
-    commands.push(help::command());
-    commands.push(info::command());
-    commands.push(lock::command());
-    commands.push(test::command());
+    let commands = vec![
+        crack::command(),
+        help::command(),
+        info::command(),
+        lock::command(),
+        test::command(),
+    ];
 
     unsafe {
         COMMANDS = Some(commands.clone());
     }
-    commands.clone()
+    commands
 }
 
 pub fn parse_command(commands: Vec<Command>, args: &[String]) -> bool {
@@ -34,7 +34,7 @@ pub fn parse_command(commands: Vec<Command>, args: &[String]) -> bool {
     }
     if args_len >= 2 {
         for i in commands.iter() {
-            if &args[1].to_lowercase() == &i.name.to_lowercase() {
+            if args[1].to_lowercase() == i.name.to_lowercase() {
                 (i).execute(args);
                 return true;
             }

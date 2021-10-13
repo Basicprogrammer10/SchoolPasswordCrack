@@ -32,19 +32,19 @@ pub fn command() -> Command {
             }
 
             // Parse the args
-            let threads: &u32 = &arg_parse::get_arg_value(&args, "-t")
+            let threads: &u32 = &arg_parse::get_arg_value(args, "-t")
                 .unwrap_or("3")
                 .parse::<u32>()
                 .unwrap();
 
-            let requests: &u32 = &arg_parse::get_arg_value(&args, "-r")
+            let requests: &u32 = &arg_parse::get_arg_value(args, "-r")
                 .unwrap_or("15")
                 .parse::<u32>()
                 .unwrap();
 
-            let password: &str = &arg_parse::get_arg_value(&args, "-p").unwrap_or("🔒");
+            let password: &str = arg_parse::get_arg_value(args, "-p").unwrap_or("🔒");
 
-            let base_page: &str = &arg_parse::get_arg_value(&args, "--page").unwrap_or(BASE_PAGE);
+            let base_page: &str = arg_parse::get_arg_value(args, "--page").unwrap_or(BASE_PAGE);
 
             // Get Username
             let username: String = match common::get_username(args) {
@@ -69,8 +69,8 @@ pub fn command() -> Command {
 
             color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
             color_print!(Color::Magenta, "[i] Requests: {}", &requests.to_string());
-            color_print!(Color::Magenta, "[i] Password: {}", &password);
-            color_print!(Color::Magenta, "[i] Base Page: {}", &base_page);
+            color_print!(Color::Magenta, "[i] Password: {}", password);
+            color_print!(Color::Magenta, "[i] Base Page: {}", base_page);
             println!();
 
             lock(&username, password, base_page, threads, requests);
@@ -99,7 +99,7 @@ fn lock(username: &str, password: &str, base_page: &str, threads: &u32, requests
         total_reqs += requests;
         system.add_locker(Locker::new(
             &system.username,
-            &password,
+            password,
             &login_page,
             requests,
         ));

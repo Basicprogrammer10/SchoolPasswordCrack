@@ -16,7 +16,7 @@ pub fn get_arg_value<'a>(raw_args: &'a [String], arg: &'a str) -> Option<&'a str
     // Make a new vec of references to the args
     let mut args: Vec<&String> = Vec::new();
     for i in raw_args.iter() {
-        args.push(&i);
+        args.push(i);
     }
 
     // Get position of the arg

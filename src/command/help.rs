@@ -51,7 +51,7 @@ pub fn command() -> Command {
                         if best_score < 0.5 {
                             return;
                         }
-                        color_print!(Color::Red, "[*] Unknown Command: `{}`", &best);
+                        color_print!(Color::Red, "[*] Unknown Command: `{}`", best);
                         return;
                     }
 

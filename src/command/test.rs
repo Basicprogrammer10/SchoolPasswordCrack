@@ -5,8 +5,6 @@ use std::thread;
 use std::time;
 use std::time::Instant;
 
-use ureq;
-
 use super::super::BASE_PAGE;
 use super::color;
 use super::color::Color;
@@ -50,19 +48,16 @@ fn test(name: &str, test: fn() -> bool) {
     });
 
     loop {
-        match rx.try_recv() {
-            Ok(result) => {
-                if result {
-                    print!(
-                        "{}",
-                        color::color(&format!("\r[+] {}\n", name), Color::Green)
-                    );
-                    break;
-                }
-                print!("{}", color::color(&format!("\r[-] {}\n", name), Color::Red));
+        if let Ok(result) = rx.try_recv() {
+            if result {
+                print!(
+                    "{}",
+                    color::color(&format!("\r[+] {}\n", name), Color::Green)
+                );
                 break;
             }
-            Err(_) => {}
+            print!("{}", color::color(&format!("\r[-] {}\n", name), Color::Red));
+            break;
         }
 
         if update.elapsed().as_millis() < 100 {
