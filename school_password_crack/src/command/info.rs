@@ -1,3 +1,7 @@
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+
 // External Crates
 use micro_rand::Random;
 use ureq::Agent;
@@ -10,11 +14,6 @@ use super::color;
 use super::color::Color;
 use super::common;
 use super::Command;
-
-// static SPINNER: [char; 10] = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-
-// static mut RUNNING: i32 = 0;
-// static mut REQUESTS: u32 = 0;
 
 pub fn command() -> Command {
     Command::new(
@@ -105,6 +104,7 @@ pub fn info(username: &str, password: &str, base_page: &str) {
     student.display();
 }
 
+#[derive(Hash)]
 struct Student {
     name: String,
     id: String,
@@ -203,9 +203,11 @@ impl Student {
 
     #[rustfmt::skip]
     fn display(&self) {
-        // Make a i64 seed from the student name
-        let name = self.name.chars().fold(1, |acc, c| acc + c as i64);
-
+        // Make a i64 seed from the student info
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        let name = 0 - hasher.finish() as i64;
+        
         println!("╭─────────────╮");
         println!("│{}│  \x1B[37mName:   {}\x1B[0m", box_line(13, name^1), self.name);
         println!("│{}│  \x1B[31mID:     {}\x1B[0m", box_line(13, name^2), self.id);

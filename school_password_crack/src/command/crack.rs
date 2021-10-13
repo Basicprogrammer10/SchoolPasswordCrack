@@ -98,7 +98,7 @@ pub fn command() -> Command {
                 let mut data = String::new();
                 file.read_to_string(&mut data).unwrap();
 
-                for line in data.split("\n") {
+                for line in data.lines() {
                     if line.is_empty() {
                         continue;
                     }
