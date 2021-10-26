@@ -4,7 +4,6 @@ mod info;
 mod lock;
 mod test;
 
-#[macro_use]
 use super::color;
 use super::color::Color;
 use super::common;
@@ -49,25 +48,37 @@ fn no_sub_command(commands: Vec<Command>, sub_cmd: bool) {
         color_print!(Color::Red, "[*] No sub-command supplied...");
     }
     color_print!(Color::Yellow, " └── SubCommands");
+
+    let mut long = 0;
+    for i in commands.iter() {
+        if i.name.len() > long {
+            long = i.name.len();
+        }
+    }
+
     for i in commands.iter() {
         if i.name == commands.last().unwrap().name {
             color_print!(
                 Color::Yellow,
-                "     └─── {}",
-                &common::upper_first_char(&i.name)
+                "     └─── {}{}— {}",
+                &common::upper_first_char(&i.name),
+                &common::get_spaceing(long, i.name.clone()),
+                &i.description
             );
             continue;
         }
         color_print!(
             Color::Yellow,
-            "     ├─── {}",
-            &common::upper_first_char(&i.name)
+            "     ├─── {}{}— {}",
+            &common::upper_first_char(&i.name),
+            &common::get_spaceing(long, i.name.clone()),
+            &i.description
         );
     }
 }
 
 fn incorrect_command(commands: Vec<Command>, command: String) {
-    color_print!(Color::Red, &*format!("[*] Unknown Command: `{}`", command));
+    color_print!(Color::Red, &format!("[*] Unknown Command: `{}`", command));
     let mut best = "";
     let mut best_score = 0.0;
     for i in commands.iter() {

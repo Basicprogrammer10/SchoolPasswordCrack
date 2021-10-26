@@ -52,7 +52,6 @@ pub fn color_bold(text: &str, color: Color) -> String {
 /// // A more complex print
 /// color_print!(Color::Green, "This is a {} message!", "green");
 /// ```
-#[macro_use]
 macro_rules! color_print {
     ($color:expr, $text:expr) => (
         println!("{}", color::color($text, $color))

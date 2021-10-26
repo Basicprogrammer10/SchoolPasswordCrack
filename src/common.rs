@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use regex::Regex;
 
 /// Use Dice Coefficient to calculate the similarity between two strings.
+///
+/// This took too long to make lol
 pub fn similarity(str1: &str, str2: &str) -> f64 {
     let a = str1.replace(" ", "");
     let b = str2.replace(" ", "");
@@ -65,6 +67,14 @@ pub fn get_username(args: &[String]) -> Option<String> {
 pub fn is_valid_email(email: &str) -> bool {
     let email_regex = Regex::new(r"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+").unwrap();
     email_regex.is_match(email)
+}
+
+pub fn get_spaceing(long: usize, text: String) -> String {
+    if text.len() >= long {
+        return " ".to_string();
+    }
+
+    " ".repeat(long - text.len() + 1)
 }
 
 #[cfg(test)]

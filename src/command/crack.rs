@@ -90,35 +90,33 @@ pub fn command() -> Command {
 
             // Check if we have a cache of the username and if so, use it
             if let Some(cache) =  cache {
-                if !Path::new(cache).exists() {
-                    return;
-                }
+                if Path::new(cache).exists() {
+                    let mut file = OpenOptions::new()
+                        .read(true)
+                        .open(cache)
+                        .unwrap();
 
-                let mut file = OpenOptions::new()
-                    .read(true)
-                    .open(cache)
-                    .unwrap();
+                    let mut data = String::new();
+                    file.read_to_string(&mut data).unwrap();
 
-                let mut data = String::new();
-                file.read_to_string(&mut data).unwrap();
+                    for line in data.lines() {
+                        if line.is_empty() {
+                            continue;
+                        }
 
-                for line in data.lines() {
-                    if line.is_empty() {
-                        continue;
-                    }
+                        let mut entry = line.split(':');
+                        let user = entry.next().unwrap();
+                        let pass = entry.next().unwrap();
 
-                    let mut entry = line.split(':');
-                    let user = entry.next().unwrap();
-                    let pass = entry.next().unwrap();
-
-                    if username == user {
-                        print!(
-                            "\r{} {} {}",
-                            color::color("[+] Password found:", Color::Green),
-                            color::color(pass, Color::Blue),
-                            color::color("[CACHE]", Color::Red)
-                        );
-                        return;
+                        if username == user {
+                            println!(
+                                "\r{} {} {}",
+                                color::color("[+] Password found:", Color::Green),
+                                color::color(pass, Color::Blue),
+                                color::color("[CACHE]", Color::Red)
+                            );
+                            return;
+                        }
                     }
                 }
             }
@@ -289,7 +287,7 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cac
     // Init Vars
     let mut update: Instant = time::Instant::now();
     let mut threads = Vec::new();
-    let mut running: i32 = 0;
+    let mut running: u32 = 0;
     let mut spin: usize = 0;
     let mut tried: u32 = 0;
 
@@ -377,7 +375,7 @@ fn cache_password(cache: &str, username: &str, password: &str) {
         .open(cache)
         .unwrap();
 
-    // Write to file
+    // Append to file
     if let Err(e) = writeln!(file, "{}:{}", username, password) {
         eprintln!("Error writing to cache... {}", e);
     }

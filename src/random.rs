@@ -1,3 +1,4 @@
+/// 128 bit Pseudo Random Number Genaration
 pub struct Random {
     seed: i128,
     a: i128,

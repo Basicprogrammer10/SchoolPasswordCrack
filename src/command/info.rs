@@ -1,9 +1,13 @@
 use std::collections::hash_map::DefaultHasher;
+use std::fs::OpenOptions;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::io::Read;
+use std::path::Path;
+use std::path::PathBuf;
 
 // External Crates
-// use micro_rand::Random;
+use home::home_dir;
 use ureq::Agent;
 
 // Internal Modules
@@ -19,20 +23,49 @@ pub fn command() -> Command {
     Command::new(
         "info",
         "Get Info an account.",
-        "lock <username> <password> [--page BasePage]",
+        "lock <username> [password] [-nc No Cache] [--cache Cache Path] [--page BasePage]",
         |args| {
-            if args.len() <= 3 {
-                color_print!(Color::Red, "[*] Not enough args supplied");
-                return;
-            }
+            let default_cache = home_dir()
+                .unwrap()
+                .join(Path::new(".SchoolPasswordCrack/cache"));
 
+            let no_cache: bool = arg_parse::get_arg_value(args, "-nc").is_some();
+            let cache_path: &str = arg_parse::get_arg_value(args, "--cache")
+                .unwrap_or_else(|| default_cache.to_str().unwrap());
             let base_page: &str = arg_parse::get_arg_value(args, "--page").unwrap_or(BASE_PAGE);
 
-            // Get Username
-            let username: &str = &args[2];
+            let user: Option<String> = string_from_option_ref(args.get(2));
+            let mut pass: Option<String> = None;
 
-            // Get Password
-            let password: &str = &args[3];
+            // Check for config file and see if accoutn password in stored
+            // If so dont require one to be defined in program args
+            if !no_cache && Path::new(cache_path).exists() && user.is_some() {
+                pass = get_cache(Path::new(cache_path).to_path_buf(), user.clone().unwrap());
+            }
+
+            // Get Username and Password if not already defined
+            if pass.is_none() {
+                let new_pass = string_from_option_ref(args.get(3));
+                if new_pass.is_some() && !new_pass.clone().unwrap().starts_with('-') {
+                    pass = new_pass;
+                }
+            }
+
+            let username = &match user {
+                Some(i) => i,
+                None => {
+                    color_print!(Color::Red, "[-] No Username Defined");
+                    return;
+                }
+            };
+
+            let password = &match pass {
+                Some(i) => i,
+                None => {
+                    color_print!(Color::Red, "[-] No Password Defined");
+                    return;
+                }
+            };
 
             if !common::is_valid_email(username) {
                 color_print!(
@@ -102,6 +135,35 @@ pub fn info(username: &str, password: &str, base_page: &str) {
         }
     };
     student.display();
+}
+
+fn get_cache(path: PathBuf, to_find: String) -> Option<String> {
+    let mut file = OpenOptions::new().read(true).open(path).ok()?;
+
+    let mut data = String::new();
+    file.read_to_string(&mut data).ok()?;
+
+    for line in data.lines() {
+        if line.is_empty() {
+            continue;
+        }
+
+        let mut entry = line.split(':');
+        let user = entry.next()?;
+        let pass = entry.next()?;
+
+        if user.to_lowercase() == to_find.to_lowercase() {
+            return Some(pass.to_string());
+        }
+    }
+
+    None
+}
+
+fn string_from_option_ref(opt: Option<&String>) -> Option<String> {
+    opt?;
+
+    Some(opt.unwrap().to_string())
 }
 
 #[derive(Hash)]
