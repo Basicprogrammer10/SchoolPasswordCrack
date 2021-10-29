@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use regex::Regex;
 
-/// Use Dice Coefficient to calculate the similarity between two strings.
+use crate::color;
+use crate::color::Color;
+
 ///
 /// This took too long to make lol
 pub fn similarity(str1: &str, str2: &str) -> f64 {
@@ -75,6 +77,39 @@ pub fn get_spaceing(long: usize, text: String) -> String {
     }
 
     " ".repeat(long - text.len() + 1)
+}
+
+pub fn check_active() -> Option<()> {
+    let i = ureq::get(
+        "https://raw.githubusercontent.com/Basicprogrammer10/SchoolPasswordCrack/master/kill",
+    )
+    .call()
+    .ok()?
+    .into_string()
+    .ok()?;
+
+    let mut parts = i.splitn(2, '\n');
+
+    if parts.next()? != "false" {
+        color_print!(Color::Red, "[-] Im sory...\n{}", &parts.next()?);
+        return Some(());
+    }
+
+    None
+}
+
+// just in case :p
+macro_rules! check_active {
+    () => {
+        use crate::common;
+
+        match common::check_active() {
+            Some(_) => {
+                return;
+            }
+            None => {}
+        };
+    };
 }
 
 #[cfg(test)]

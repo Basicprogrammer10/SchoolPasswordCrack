@@ -2,9 +2,10 @@ use std::env;
 
 #[macro_use]
 mod color;
+#[macro_use]
+mod common;
 mod arg_parse;
 mod command;
-mod common;
 mod random;
 use color::Color;
 
@@ -21,6 +22,9 @@ fn main() {
             Color::Green
         )
     );
+
+    // hmm
+    check_active!();
 
     if BASE_PAGE.is_empty() {
         color_print!(Color::Red, "[-] Defult Base Page not defined");
