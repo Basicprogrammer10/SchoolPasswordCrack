@@ -26,7 +26,7 @@ pub fn command() -> Command {
 
         // Make sure the Session Id is being set
         test("Genesis Session", || {
-            let session = ureq::get(&format!("{}/bernardsboe/sis/view", BASE_PAGE)).call();
+            let session = ureq::get(&format!("{}/sis/view", BASE_PAGE)).call();
             match session.unwrap().header("set-cookie") {
                 Some(cookie) => cookie.contains("JSESSIONID"),
                 None => false,

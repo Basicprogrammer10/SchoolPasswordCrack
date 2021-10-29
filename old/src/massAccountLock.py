@@ -8,9 +8,9 @@ import os
 import re
 
 ########### CONFIG ###########
-accounts   = ['fakeUser@bernardsboe.com']
-url        = 'https://parents.genesisedu.com/bernardsboe/sis/j_security_check'
-checkUrl   = 'https://parents.genesisedu.com/bernardsboe/sis/view?gohome=true'
+accounts   = ['fakeUser@domain.com']
+url        = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/j_security_check'
+checkUrl   = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/view?gohome=true'
 timeout    = 0.5
 
 

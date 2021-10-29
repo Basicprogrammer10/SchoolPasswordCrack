@@ -8,8 +8,9 @@ mod common;
 mod random;
 use color::Color;
 
-pub const BASE_PAGE: &str = "https://parents.genesisedu.com/bernardsboe";
-pub const VERSION: &str = "2.1.8";
+// This should be like https://parents.genesisedu.com/SCHOOL_PAGE
+pub const BASE_PAGE: &str = "";
+pub const VERSION: &str = "2.1.9";
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -20,6 +21,10 @@ fn main() {
             Color::Green
         )
     );
+
+    if BASE_PAGE.is_empty() {
+        color_print!(Color::Red, "[-] Defult Base Page not defined");
+    }
 
     // Load Commands
     let commands = command::load_commands();

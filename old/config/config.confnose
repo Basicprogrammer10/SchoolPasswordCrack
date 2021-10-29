@@ -1,8 +1,8 @@
-url      = "https://parents.genesisedu.com/bernardsboe/sis/j_security_check"
-checkUrl = "https://parents.genesisedu.com/bernardsboe/sis/view?gohome=true"
+url      = "https://parents.genesisedu.com/SCHOOL_PAGE/sis/j_security_check"
+checkUrl = "https://parents.genesisedu.com/SCHOOL_PAGE/sis/view?gohome=true"
 threads  = "50"
 timeout  = "0.5"
 
-uName    = "connorslade@bernardsboe.com"
+uName    = "EMAIL HERE"
 pWord    = "30"
 pWordIta = "9999"

