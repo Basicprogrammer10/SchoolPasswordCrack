@@ -1,6 +1,6 @@
 [package]
 name = "school_password_crack"
-version = "2.1.7"
+version = "2.1.8"
 authors = ["Connor Slade <connor@connorcode.com>"]
 edition = "2018"
 

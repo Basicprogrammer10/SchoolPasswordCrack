@@ -9,7 +9,7 @@ mod random;
 use color::Color;
 
 pub const BASE_PAGE: &str = "https://parents.genesisedu.com/bernardsboe";
-pub const VERSION: &str = "2.1.7";
+pub const VERSION: &str = "2.1.8";
 fn main() {
     let args: Vec<String> = env::args().collect();
 

